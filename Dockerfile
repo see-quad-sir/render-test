@@ -5,8 +5,8 @@ FROM gradle:8.14.3-jdk21 AS build
 WORKDIR /app
 
 # Copy only the necessary build files and wrapper to leverage Docker cache
-COPY build.gradle settings.gradle gradlew ./
-COPY gradle ./gradle
+COPY build.gradle settings.gradle gradlew /app/
+COPY gradle /app/gradle
 
 # Make the Gradle wrapper executable
 RUN chmod +x ./gradlew
@@ -15,7 +15,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew dependencies
 
 # Copy the source code
-COPY src ./src
+COPY src /app/src
 
 # Build the application. The output JAR will be in build/libs/
 RUN ./gradlew bootJar
