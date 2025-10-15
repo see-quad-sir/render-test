@@ -18,12 +18,12 @@ RUN ./gradlew dependencies
 COPY src /app/src
 
 # Build the application. The output JAR will be in build/libs/
-RUN ./gradlew bootJar
+RUN ./gradlew bootJar --no-daemon
 
 # STAGE 2: Create the final, smaller image
 # Using a JRE image for running the application, not a full JDK
 # Using a -focal (glibc) image for better compatibility than Alpine (musl)
-FROM eclipse-temurin:21-jre-alpine AS final
+FROM eclipse-temurin:21-jre-jammy AS final
 
 # Create a non-root user and group for security
 RUN addgroup --system spring && adduser --system --ingroup spring spring
@@ -33,11 +33,11 @@ WORKDIR /app
 
 # Copy the built JAR from the build stage
 # Using the specific JAR name is more robust than a wildcard
-COPY --from=build /app/build/libs/render-test-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 
 # Expose the port the application will run on (for documentation)
 EXPOSE 8080
 
 # Command to run the application
 # The application itself must be configured to listen on the PORT env var from Render.
-CMD ["java", "-jar", "app.jar"]
+CMD java -Dserver.port=${PORT:-8080} -jar app.jar
